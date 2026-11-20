@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ចាប់ឈ្មោះ និងចាប់ក្រុមសិស្ស</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;600;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--tx:#1c2333;--mut:#667089;--pri:#4f46e5;--pri2:#7c3aed;--ok:#059669;--bd:#dfe3ee;--chip:#eef0fb;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12141c;--card:#1c2030;--tx:#eef0f7;--mut:#9aa3bd;--pri:#818cf8;--pri2:#a78bfa;--ok:#34d399;--bd:#2d3350;--chip:#262b44;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12141c;--card:#1c2030;--tx:#eef0f7;--mut:#9aa3bd;--pri:#818cf8;--pri2:#a78bfa;--ok:#34d399;--bd:#2d3350;--chip:#262b44;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:'Noto Sans Khmer','Khmer OS Battambang',system-ui,sans-serif;line-height:1.7}
+header{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;padding:22px 16px;text-align:center}
+header h1{margin:0;font-size:1.6rem}header p{margin:4px 0 0;opacity:.92;font-size:.95rem}
+main{max-width:980px;margin:0 auto;padding:16px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tab{flex:1;min-width:110px;padding:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:12px;font:inherit;font-weight:600;cursor:pointer}
+.tab.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;margin-bottom:14px}
+textarea,input[type=number],input[type=text]{width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
+textarea{min-height:170px;resize:vertical}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+button.b{font:inherit;font-weight:600;border:0;border-radius:10px;padding:10px 16px;cursor:pointer;background:var(--pri);color:#fff}
+button.b.g{background:var(--chip);color:var(--tx)}button.b.ok{background:var(--ok)}
+button.b:disabled{opacity:.5;cursor:default}
+.mut{color:var(--mut);font-size:.9rem}
+.stage{text-align:center;padding:26px 10px}
+.name{font-size:clamp(2rem,9vw,4rem);font-weight:800;min-height:1.5em;color:var(--pri);word-break:break-word}
+.name.win{color:var(--ok);animation:pop .6s}
+@keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.big{font-size:1.2rem;padding:14px 34px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+.chip{background:var(--chip);border-radius:20px;padding:2px 12px;font-size:.9rem}
+#out{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;padding:12px;background:var(--card);border-radius:12px}
+.grp{border:2px solid var(--pri);border-radius:12px;overflow:hidden;background:var(--card)}
+.grp h3{margin:0;padding:6px 12px;background:var(--pri);color:#fff;font-size:1rem}
+.grp ol{margin:0;padding:8px 8px 8px 34px}
+.ttl{grid-column:1/-1;text-align:center;font-weight:800;font-size:1.3rem}
+.nick{outline:0;border-bottom:1px dashed rgba(255,255,255,.7);padding:0 4px;font-weight:800}
+.nick:empty::before{content:attr(data-ph);opacity:.7;font-weight:400}
+#out.exp .nick{border:0}#out.exp .nick:empty{display:none}
+.cr{grid-column:1/-1;text-align:center;color:var(--mut);font-size:.85rem;border-top:1px solid var(--bd);padding-top:8px}
+label{font-size:.95rem}
+footer{text-align:center;padding:20px 12px 28px;color:var(--mut);font-size:.9rem}
+footer b{color:var(--pri)}
+</style>
+</head>
+<body>
+<header><h1>🎲 ចាប់ឈ្មោះ និងចាប់ក្រុមសិស្ស</h1><p>រើសសិស្សដោយចៃដន្យ · បែងចែកក្រុម · នាំចូល/នាំចេញ Excel</p></header>
+<main>
+<div class="tabs">
+<button class="tab on" data-t="t1">១. បញ្ជីឈ្មោះ</button>
+<button class="tab" data-t="t2">២. ចាប់ឈ្មោះ</button>
+<button class="tab" data-t="t3">៣. ចាប់ក្រុម</button>
+</div>
+
+<section id="t1" class="card">
+<div class="row">
+<button class="b" id="bx">📥 នាំចូលពី Excel / CSV</button>
+<input type="file" id="fx" accept=".xlsx,.xls,.csv" hidden>
+<label><input type="checkbox" id="hd"> រំលងជួរទី១ (ក្បាលជួរ)</label>
+<button class="b g" id="bs">ឧទាហរណ៍</button>
+<button class="b g" id="bc">🗑 សម្អាត</button>
+</div>
+<p class="mut">ដាក់ឈ្មោះមួយជួរមួយនាក់ (ឬនាំចូលជួរទី១ពី Excel)។ ឈ្មោះស្ទួនត្រូវបានលុបដោយស្វ័យប្រវត្តិ។</p>
+<textarea id="ta" placeholder="សុខា&#10;ដារ៉ា&#10;សុវណ្ណ..."></textarea>
+<p><b id="cnt">០</b> នាក់</p>
+</section>
+
+<section id="t2" class="card" hidden>
+<div class="stage">
+<div class="name" id="nm">?</div>
+<button class="b big" id="go">🎯 ចាប់ឈ្មោះ</button>
+<div class="row" style="justify-content:center"><label><input type="checkbox" id="rm" checked> មិនឱ្យចាប់ម្ដងទៀត (ដកអ្នកដែលបានចាប់ចេញ)</label></div>
+<div class="row" style="justify-content:center"><label><input type="checkbox" id="snd" checked> 🔊 សម្លេង</label><button class="b g" id="rs">↺ ចាប់ផ្ដើមឡើងវិញ</button></div>
+<div class="mut">នៅសល់ <b id="left">០</b> នាក់</div>
+<div class="chips" id="hist"></div>
+</div>
+</section>
+
+<section id="t3" hidden>
+<div class="card">
+<div class="row">
+<label>បែងចែកតាម:
+<select id="mode" style="font:inherit;padding:8px;border-radius:8px"><option value="n">ចំនួនក្រុម</option><option value="s">ចំនួនសមាជិកក្នុងមួយក្រុម</option></select></label>
+<input type="number" id="num" min="1" value="4" style="width:90px">
+<input type="text" id="ttl" placeholder="ចំណងជើង (ជម្រើស) ឧ. ថ្នាក់ទី ១២ក" style="flex:1;min-width:180px">
+</div>
+<div class="row">
+<button class="b ok" id="mk">👥 ចាប់ក្រុម</button>
+<button class="b g" id="ex1">🖼 រូបភាព PNG</button>
+<button class="b g" id="ex2">📄 PDF</button>
+<button class="b g" id="ex3">📊 Excel</button>
+</div>
+<p class="mut" id="msg"></p>
+</div>
+<div id="out"></div>
+</section>
+</main>
+<footer>បង្កើតកម្មវិធីដោយ <b>គ្រូអាយធី ស្មោះស្នេហ៍ ហ៊ាង ឈាងលី</b></footer>
+
+<script>
+const $=id=>document.getElementById(id);
+let pool=[],picked=[],groups=[],nicks=[],busy=false;
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const CR='បង្កើតកម្មវិធីដោយ គ្រូអាយធី ស្មោះស្នេហ៍ ហ៊ាង ឈាងលី';
+const kh=n=>String(n).replace(/\d/g,d=>'០១២៣៤៥៦៧៨៩'[d]);
+const names=()=>[...new Set($('ta').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean))];
+function upd(){const n=names();$('cnt').textContent=kh(n.length);resetPick()}
+$('ta').oninput=upd;
+function resetPick(){pool=names();picked=[];$('hist').innerHTML='';$('nm').textContent='?';$('nm').className='name';$('left').textContent=kh(pool.length)}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));['t1','t2','t3'].forEach(i=>$(i).hidden=i!==b.dataset.t)});
+$('bs').onclick=()=>{$('ta').value="សុខា\nដារ៉ា\nសុវណ្ណ\nចាន់ថា\nរតនា\nវណ្ណៈ\nស្រីនាង\nសុភា\nមករា\nបូណា\nលីនដា\nវិសាល";upd()};
+$('bc').onclick=()=>{$('ta').value='';upd()};
+$('bx').onclick=()=>$('fx').click();
+$('fx').onchange=async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});
+ const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
+ let list=rows.map(r=>String(r[0]??'').trim()).filter(Boolean);
+ if($('hd').checked)list=list.slice(1);
+ $('ta').value=list.join('\n');upd();alert('នាំចូលបាន '+kh(names().length)+' នាក់')}
+ catch(err){alert('មិនអាចអានឯកសារបានទេ')}
+ e.target.value='';
+};
+
+/* Sound */
+let ac;
+function tone(f,d,t=0,type='sine',v=.15){if(!$('snd').checked)return;ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+ const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;o.connect(g);g.connect(ac.destination);
+ const s=ac.currentTime+t;g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.start(s);o.stop(s+d)}
+function fanfare(){[523,659,784,1047].forEach((f,i)=>tone(f,.25,i*.12,'triangle',.2));tone(1047,.7,.5,'triangle',.2);
+ if($('snd').checked&&window.speechSynthesis){const u=new SpeechSynthesisUtterance('Congratulations!');u.lang='en-US';u.rate=.95;speechSynthesis.cancel();setTimeout(()=>speechSynthesis.speak(u),500)}}
+
+/* Pick */
+$('go').onclick=()=>{
+ if(busy)return;const list=$('rm').checked?pool.filter(n=>!picked.includes(n)):pool;
+ if(!list.length){alert(pool.length?'បានចាប់អស់ហើយ សូមចុច "ចាប់ផ្ដើមឡើងវិញ"':'សូមបញ្ចូលឈ្មោះសិស្សជាមុនសិន');return}
+ busy=true;$('go').disabled=true;$('nm').className='name';
+ const win=list[Math.floor(Math.random()*list.length)];let i=0,steps=28;
+ (function tick(){
+  $('nm').textContent=i<steps?list[Math.floor(Math.random()*list.length)]:win;
+  if(i<steps){tone(500+i*18,.06,0,'square',.05);i++;setTimeout(tick,45+i*i*0.35)}
+  else{$('nm').className='name win';picked.push(win);
+   const c=document.createElement('span');c.className='chip';c.textContent=kh(picked.length)+'. '+win;$('hist').appendChild(c);
+   $('left').textContent=kh(pool.filter(n=>!picked.includes(n)).length);fanfare();busy=false;$('go').disabled=false}
+ })();
+};
+$('rs').onclick=resetPick;
+
+/* Groups */
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+$('mk').onclick=()=>{
+ const n=names();if(n.length<2){$('msg').textContent='សូមបញ្ចូលឈ្មោះយ៉ាងតិច ២ នាក់';return}
+ let k=Math.max(1,parseInt($('num').value)||1);
+ if($('mode').value==='s')k=Math.ceil(n.length/k);
+ k=Math.min(k,n.length);
+ groups=Array.from({length:k},()=>[]);
+ shuffle(n).forEach((x,i)=>groups[i%k].push(x));
+ nicks=[];render();tone(660,.15);tone(880,.2,.12);
+ $('msg').textContent='បានបែងចែក '+kh(n.length)+' នាក់ ជា '+kh(k)+' ក្រុម';
+};
+function render(){
+ const t=$('ttl').value.trim();
+ $('out').innerHTML=(t?'<div class="ttl"></div>':'')+groups.map((g,i)=>`<div class="grp"><h3>ក្រុមទី ${kh(i+1)} · <span class="nick" contenteditable="true" data-i="${i}" data-ph="✏️ ដាក់ឈ្មោះក្រុម">${esc(nicks[i]||'')}</span> <small>(${kh(g.length)} នាក់)</small></h3><ol>${g.map(x=>`<li>${x.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</li>`).join('')}</ol></div>`).join('');
+ if(t)$('out').firstChild.textContent=t;
+ $('out').insertAdjacentHTML('beforeend','<div class="cr">'+CR+'</div>');
+}
+$('ttl').oninput=()=>{if(groups.length)render()};
+$('out').oninput=e=>{const i=e.target.dataset.i;if(i!==undefined)nicks[i]=e.target.textContent.trim()};
+$('out').onkeydown=e=>{if(e.key==='Enter'&&e.target.dataset.i!==undefined){e.preventDefault();e.target.blur()}};
+function need(){if(!groups.length){$('msg').textContent='សូមចុច "ចាប់ក្រុម" ជាមុនសិន';return false}return true}
+async function save(filename,data){
+ try{const d=await claude.use('downloads');if(!d){$('msg').textContent='មិនអាចទាញយកនៅទីនេះបានទេ';return}
+ await d.save({filename,data});$('msg').textContent='✅ រួចរាល់'}
+ catch(e){if(e&&e.code!=='declined')$('msg').textContent='បរាជ័យ: '+(e.message||e)}
+}
+const canvas=async()=>{$('out').classList.add('exp');try{return await html2canvas($('out'),{scale:2,backgroundColor:getComputedStyle(document.body).getPropertyValue('--card').trim()||'#fff'})}finally{$('out').classList.remove('exp')}};
+const b64=c=>c.toDataURL('image/png');
+$('ex1').onclick=async()=>{if(!need())return;const c=await canvas();c.toBlob(b=>save('ក្រុមសិស្ស.png',b),'image/png')};
+$('ex2').onclick=async()=>{if(!need())return;const c=await canvas();
+ const {jsPDF}=window.jspdf,p=new jsPDF({orientation:c.width>c.height?'l':'p',unit:'pt',format:'a4'});
+ const W=p.internal.pageSize.getWidth()-40,H=p.internal.pageSize.getHeight()-40,r=Math.min(W/c.width,H/c.height);
+ p.addImage(b64(c),'PNG',20,20,c.width*r,c.height*r);save('ក្រុមសិស្ស.pdf',p.output('arraybuffer'))};
+$('ex3').onclick=()=>{if(!need())return;
+ const rows=[['ក្រុម','ឈ្មោះក្រុម (Nickname)','ល.រ','ឈ្មោះ']];groups.forEach((g,i)=>g.forEach((x,j)=>rows.push(['ក្រុមទី '+(i+1),nicks[i]||'',j+1,x])));rows.push([],[CR]);
+ const wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:14},{wch:24},{wch:6},{wch:28}];
+ XLSX.utils.book_append_sheet(wb,ws,'Groups');
+ save('ក្រុមសិស្ស.xlsx',XLSX.write(wb,{bookType:'xlsx',type:'array'}))};
+upd();
+</script>
+</body>
+</html>
